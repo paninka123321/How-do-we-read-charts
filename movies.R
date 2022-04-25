@@ -1,6 +1,7 @@
 library(data.table)
 library(dplyr)
 library(ggplot2)
+library(patchwork)
 #Avengers
 Wanda_Maximoff_height <- 168
 Wanda_Maximoff_mass <- 58
@@ -15,7 +16,7 @@ Avengers <- data.table(
   height = c(Wanda_Maximoff_height, agent_Phil_Coulson_height, Quicksilver_height),
   mass = c(Wanda_Maximoff_mass, agent_Phil_Coulson_mass, Quicksilver_mass),
   movie = c("Avengers","Avengers","Avengers"),
-  name = c("Wanda", "agent Phil Coulson", "Quicksilver")
+  name = c("Wanda", "agent Coulson", "Quicksilver")
 )
 
 #Wladca_Pierscieni
@@ -36,10 +37,12 @@ Wladca_Pierscieni <- data.table(
 
 Starwars_movie <- starwars %>% 
   select(name, height, mass) %>% 
-  filter(height <=172 & height > 162 ) %>% 
-  filter(mass <= 72)
+  filter(height <=172 & height > 162 | name == "Luke Skywalker") %>% 
+  filter(mass <= 72 | name == "Luke Skywalker") %>% 
+  filter(height != 166) %>% 
+  filter(height != 170)
 Starwars_movie <- na.omit(Starwars_movie) %>% 
-   mutate(movie = c("Starwars", "Starwars", "Starwars", "Starwars", "Starwars"))
+   mutate(movie = c("Starwars", "Starwars", "Starwars", "Starwars"))
 View(starwars)
 dt <- rbind(Starwars_movie, Wladca_Pierscieni, Avengers)
 
@@ -67,8 +70,8 @@ height_grey <- dt %>%
 height_grey
 
 
-level_order <- c('Wanda', 'agent Phil Coulson', 'Quicksilver',
-                 'Ben Quadinaros', 'Luminara Unduli', 'Barriss Offee','Zam Wesell', 'Padmé Amidala',
+level_order <- c('Wanda', 'agent Coulson', 'Quicksilver',
+                 'Luke Skywalker', 'Ben Quadinaros','Zam Wesell', 'Padmé Amidala',
                  'Legolas','Elrond', 'Aragorn')
 height <- dt %>% 
   ggplot(aes(x = factor(name, level = level_order), y = height)) +
@@ -77,8 +80,19 @@ height <- dt %>%
         legend.position = "none",
         axis.title = element_blank())+
   labs(title = "Wzrost postaci filmowych")+
-  plot_annotation(caption = "Pierwsze 3 słupki dotyczą postaci z Avengersów,\n następne 5 słupków - postaci z Władcy Pierścieni,\n ostatnie 3 - postaci ze Starworsów")
+  plot_annotation(caption = "Pierwsze 3 słupki dotyczą postaci z Avengersów,\n następne 4 słupki - postaci ze Starworsów,\n ostatnie 3 - postaci z Władcy Pierścieni")
 height
+
+height_bez_kolejnosci <-dt %>% 
+  ggplot(aes(x = name, y = height)) +
+  geom_col() +
+  theme(axis.text.x = element_text(angle=45),
+        legend.position = "none",
+        axis.title = element_blank())+
+  labs(title = "Wzrost postaci filmowych")+
+  plot_annotation(caption = "Wanda, agent Coulson, Quicksilver - postaci z Avengersów,\nLuke Skywalker, Ben Quadinaros, Zam Wesell, Padmé Amidala - postaci ze Starworsów,\n Legolas,Elron, Aragorn - postaci ze Starworsów") &
+  theme(plot.caption = element_text(size = 7.8))
+height_bez_kolejnosci
 
 height_better <- dt %>% 
   ggplot(aes(x = name, y = height, fill = movie)) +
